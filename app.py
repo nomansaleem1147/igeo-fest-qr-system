@@ -64,16 +64,56 @@ def render_event_header(subtitle):
 
 st.markdown(f"""
 <style>
-.stApp {{ background:#f3f5f7; color:#263648; }}
-.block-container {{ padding-top:1.2rem; max-width:1450px; }}
-.hero {{ background:linear-gradient(110deg,{NAVY},{GREEN}); padding:22px 28px; border-radius:15px; color:white; margin-bottom:18px; }}
-.hero h1 {{ color:#e6c982; letter-spacing:2px; margin:0; }}
-.hero p {{ margin:5px 0 0; color:#f4f5f6; }}
-.metric-card {{ background:white; border:1px solid #e6ebef; border-radius:13px; padding:16px; }}
-.metric-num {{ font-size:30px; font-weight:800; color:{NAVY}; }}
-.metric-label {{ color:#718096; font-size:12px; }}
-.ticket-state {{ padding:14px 16px; border-radius:10px; background:#e8f3ed; color:{GREEN}; font-weight:700; }}
-div.stButton > button {{ border-radius:8px; font-weight:650; }}
+:root {{
+  --igeo-navy:#102D43; --igeo-green:#16845B; --igeo-blue:#2878CF;
+  --igeo-purple:#8055B8; --igeo-amber:#D18A29; --igeo-gold:#F4D58D;
+}}
+.stApp {{ background:linear-gradient(135deg,#F4F7F6 0%,#EAF0F2 100%); color:#243746; }}
+.block-container {{ padding-top:1.15rem; padding-bottom:2.5rem; max-width:1500px; }}
+.hero {{
+  background:linear-gradient(112deg,#102D43 0%,#176B57 72%,#16845B 100%);
+  padding:25px 30px; border-radius:18px; color:white; margin-bottom:18px;
+  box-shadow:0 10px 28px rgba(16,45,67,.16); border:1px solid rgba(255,255,255,.14);
+}}
+.hero h1 {{ color:#F4D58D; letter-spacing:2px; margin:0; font-size:2.2rem; font-weight:850; }}
+.hero p {{ margin:7px 0 0; color:#F4F7F6; font-size:.94rem; letter-spacing:.4px; }}
+[data-testid="stImage"] img {{ border-radius:15px; background:#fff; padding:6px; box-shadow:0 5px 18px rgba(16,45,67,.12); object-fit:contain; }}
+.metric-card {{
+  background:linear-gradient(145deg,#fff 0%,#F9FBFC 100%); border:1px solid #E2E9EE;
+  border-top:5px solid var(--igeo-green); border-radius:16px; padding:17px 18px;
+  min-height:108px; box-shadow:0 6px 18px rgba(16,45,67,.055);
+  transition:transform .18s ease,box-shadow .18s ease;
+}}
+.metric-card:hover {{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(16,45,67,.11); }}
+.metric-card.metric-registered {{ border-top-color:var(--igeo-green); }}
+.metric-card.metric-tickets {{ border-top-color:var(--igeo-blue); }}
+.metric-card.metric-checked {{ border-top-color:var(--igeo-purple); }}
+.metric-card.metric-revoked {{ border-top-color:var(--igeo-amber); }}
+.metric-icon {{ font-size:20px; margin-bottom:4px; }}
+.metric-num {{ font-size:32px; line-height:1.1; font-weight:850; color:var(--igeo-navy); }}
+.metric-label {{ color:#687989; font-size:11px; font-weight:800; letter-spacing:1px; margin-top:6px; }}
+.ticket-state {{ padding:14px 16px; border-radius:12px; background:#E5F5ED; color:#126847; font-weight:750; }}
+div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ gap:9px; background:#E8EEF1; padding:7px; border-radius:13px; border:1px solid #DDE6EA; }}
+div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background:#fff; border:1px solid #E1E8EC; border-radius:9px; padding:10px 17px; color:#425466; font-weight:750; }}
+div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {{ background:linear-gradient(110deg,#176B57,#16845B); color:#fff; border-color:#16845B; }}
+div[data-testid="stTabs"] button[data-baseweb="tab"] p {{ color:inherit; }}
+div.stButton > button,div.stDownloadButton > button,div[data-testid="stFormSubmitButton"] button {{
+  border-radius:10px; min-height:42px; font-weight:750; border:0;
+  transition:all .18s ease; box-shadow:0 4px 10px rgba(16,45,67,.10);
+}}
+div.stButton > button[kind="primary"],div[data-testid="stFormSubmitButton"] button[kind="primary"] {{ background:linear-gradient(110deg,#176B57,#16845B); color:#fff; }}
+div.stButton > button[kind="secondary"] {{ background:linear-gradient(110deg,#2878CF,#2465AE); color:#fff; }}
+div.stDownloadButton > button {{ background:linear-gradient(110deg,#8055B8,#69439D); color:#fff; }}
+div.stButton > button:hover,div.stDownloadButton > button:hover {{ filter:brightness(1.07); transform:translateY(-1px); box-shadow:0 7px 16px rgba(16,45,67,.16); }}
+div[data-testid="stFileUploader"] section {{ background:#fff; border:1px dashed #A9BBC5; border-radius:13px; }}
+div[data-testid="stDataFrame"] {{ border:1px solid #E1E8EC; border-radius:12px; overflow:hidden; }}
+div[data-testid="stAlert"] {{ border-radius:12px; }}
+h2,h3 {{ color:#102D43; font-weight:800; }} hr {{ border-color:#DCE5E9; }}
+@media(max-width:700px) {{
+ .hero {{ padding:18px 16px; }} .hero h1 {{ font-size:1.55rem; }}
+ .metric-card {{ padding:13px; min-height:96px; }} .metric-num {{ font-size:26px; }}
+ div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ flex-wrap:wrap; }}
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -388,21 +428,47 @@ def show_ticket_page(token):
 
 def admin_dashboard():
     render_event_header(f"{SUBTITLE} · QR ENTRY MANAGEMENT")
-    st.caption(f"{EVENT_DATE}  |  {EVENT_TIME}  |  {VENUE}")
-    if st.button("Log out"):
-        st.session_state["authenticated"] = False
-        st.rerun()
+    st.markdown(
+        f'<div style="background:#E7F0F2;border:1px solid #D8E4E8;border-radius:12px;'
+        f'padding:12px 16px;margin:0 0 12px 0;color:#40566A;">'
+        f'<b style="color:#102D43;">EVENT CONTROL CENTER</b><br>'
+        f'<span style="font-size:0.88rem;">{EVENT_DATE} &nbsp;|&nbsp; {EVENT_TIME} &nbsp;|&nbsp; {VENUE}</span></div>',
+        unsafe_allow_html=True,
+    )
+    logout_col, spacer_col = st.columns([1, 5])
+    with logout_col:
+        if st.button("↪  Log out", type="secondary", use_container_width=True):
+            st.session_state["authenticated"] = False
+            st.rerun()
 
+    st.markdown("### Event overview")
     counts = get_counts()
     cols = st.columns(4)
-    for col, label, value in zip(cols, ["REGISTERED", "ACTIVE TICKETS", "CHECKED IN", "REVOKED"], counts.values()):
-        col.markdown(f'<div class="metric-card"><div class="metric-num">{value}</div><div class="metric-label">{label}</div></div>', unsafe_allow_html=True)
+    metric_specs = [
+        ("REGISTERED", "👥", "metric-registered"),
+        ("ACTIVE TICKETS", "🎟️", "metric-tickets"),
+        ("CHECKED IN", "✓", "metric-checked"),
+        ("REVOKED", "⛔", "metric-revoked"),
+    ]
+    for col, (label, icon, css_class), value in zip(cols, metric_specs, counts.values()):
+        col.markdown(
+            f'<div class="metric-card {css_class}">'
+            f'<div class="metric-icon">{icon}</div>'
+            f'<div class="metric-num">{value}</div>'
+            f'<div class="metric-label">{label}</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    tab_import, tab_tickets, tab_register, tab_reports = st.tabs(["Import attendees", "Generate tickets", "Attendee register", "Reports"])
+    st.markdown("### Management workspace")
+    tab_import, tab_tickets, tab_register, tab_reports = st.tabs([
+        "📥  Import attendees", "🎟️  Generate tickets",
+        "👥  Attendee register", "📊  Reports"
+    ])
     sb = db_client()
 
     with tab_import:
         st.subheader("Import attendee list")
+        st.caption("Add approved student and alumni records using an Excel or CSV file.")
         up = st.file_uploader("Upload Excel (.xlsx) or CSV", type=["xlsx", "csv"])
         if up and st.button("Import attendees", type="primary"):
             try:
@@ -434,6 +500,7 @@ def admin_dashboard():
 
     with tab_tickets:
         st.subheader("Issue QR tickets")
+        st.caption("Generate printable QR entry tickets for approved attendees.")
         base = app_url()
         if not base:
             st.error("Set APP_URL in Streamlit Secrets to your deployed Streamlit app URL before generating tickets.")
@@ -469,6 +536,7 @@ def admin_dashboard():
 
     with tab_register:
         st.subheader("Attendee register")
+        st.caption("Search attendee records and manage ticket access.")
         search = st.text_input("Search name, attendee ID or roll number")
         rows = fetch_attendees(search)
         if rows:
@@ -485,6 +553,7 @@ def admin_dashboard():
 
     with tab_reports:
         st.subheader("Attendance export")
+        st.caption("Review attendance information and export the event register.")
         rows = sb.table("attendees").select("attendee_id,full_name,roll_number,category,department,registration_status,ticket_status,checked_in_at,revoked").limit(10000).execute().data or []
         df = pd.DataFrame(rows)
         if not df.empty:
